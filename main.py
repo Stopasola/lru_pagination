@@ -32,7 +32,6 @@ def hex_to_bin(hex_trace):
 
 
 def build_reference_string(original_trace_lst, pg_num_size):
-    # unconsidered o W & R
     reference_str = list()
     for trace in original_trace_lst:
         bin_trace = hex_to_bin(trace[0])
@@ -41,31 +40,38 @@ def build_reference_string(original_trace_lst, pg_num_size):
     return reference_str
 
 
-'''=============================================
-============================================='''
+def run_lru(reference_string, frame_size):
+    lru_start_time = datetime.now()
+    classic_lru.start(reference_string, frame_size)
+    lru_total_time = datetime.now() - lru_start_time
+    print('lru_total_time', lru_total_time.microseconds / 1000)
+
+
+def run_lru_second_chance(reference_string, frame_size):
+    lru_sc_start_time = datetime.now()
+    lru_second_chance.start(reference_string, frame_size)
+    lru_sc_total_time = datetime.now() - lru_sc_start_time
+    print('lru_sc_total_time', lru_sc_total_time.microseconds / 1000)
+
+
 folder_name = 'trace/'
-trace_name = 'gcc.trace'
+trace_names = ['bigone.trace', 'bzip.trace', 'gcc.trace', 'sixpack.trace', 'swim.trace']
 page_size = 4096  # input
-frame_size = 4  # input
+frame_size = 5  # input
 
 displacement = displacement_bits(page_size)
 pnz = page_number_size(displacement)
 
-trace_list = open_trace(folder_name, trace_name)
-reference_string = build_reference_string(trace_list, pnz)
 
-'''========================================================='''
-'''================ CLassic LRU ============================'''
+for file in trace_names:
+    trace_list = open_trace(folder_name, file)
+    reference_string = build_reference_string(trace_list, pnz)
+    print('==> ', file)
 
-'''lru_start_time = datetime.now()
-classic_lru.start(reference_string, frame_size)
-lru_total_time = datetime.now() - lru_start_time
-print('lru_total_time', lru_total_time.microseconds / 1000)'''
+    run_lru(reference_string, frame_size)
+    run_lru_second_chance(reference_string, frame_size)
 
-'''========================================================='''
-'''================ LRU Second Chance ======================'''
 
-lru_sc_start_time = time.time()
-lru_second_chance.start(reference_string, frame_size)
-lru_sc_total_time = round(time.time() - lru_sc_start_time, 5)
-# print(lru_sc_total_time)
+
+
+
